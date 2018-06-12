@@ -8,7 +8,7 @@ var app = express()
 // Create S3 client, set credentials in 'credentials' file
 //apiVersion option keeps api version consistent accross platforms
 var s3 = new AWS.S3({
-  apiVersion: '2006-03-01'
+  apiVersion: '2006-03-01',
 })
 
 // Suffix to make bucket names unique
@@ -30,7 +30,7 @@ function add_bucket(name) {
 // Add a single image ot the specified users bucket
 function add_object(name, filename, file) {
   return new Promise((resolve, reject) => {
-
+    console.log(name,filename,file)
     // Information on object to be uploaded
     var params = {
       Body: file,
@@ -73,6 +73,19 @@ function get_objects(name, num) {
   })
 }
 
+// Get a document from the database
+function get_object(username,filename) {
+  return new Promise((resolve,reject) => {
+
+    var params = {
+      Bucket: username + BUCKET_SUFFIX,
+      Key: filename
+    }
+    console.log(username, filename)
+    s3.getObject(params).createReadStream().pipe(fs.createWriteStream("./"+filename))
+  })
+}
+
 // Delete a users
 function delete_bucket(name) {
   return new Promise((resolve,reject) => {
@@ -112,4 +125,5 @@ module.exports = {
   "get_objects":get_objects,
   "delete_bucket":delete_bucket,
   "delete_object":delete_object,
+  "get_object":get_object
 }

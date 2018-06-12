@@ -24,19 +24,24 @@ program
 	})
 
 program
-	.command('addPhoto <username> <filename> <filepath>')
+	.command('addPhoto <username> <filepath> [filename]')
 	.alias('ap')
 	.description('Add photo to a users collection')
-	.action((username,filename,filepath) => {
+	.action((username,filepath,filename) => {
 
-		db.add_object(username,filename,filepath)
-		.then((data) => {
-			console.log(data)
-		})
-		.catch((err) => {
-			console.log(err)
-		})
+		filename = String(filename)|| String(filepath)
+		console.log(username,filepath,filename)
 
+		fs.readFile(filepath, (err,data) => {
+
+			db.add_object(username,filename,data)
+			.then((data) => {
+				console.log(data)
+			})
+			.catch((err) => {
+				console.log(err)
+			})
+		})
 	})
 
 program
@@ -57,7 +62,7 @@ program
 
 program
 .command('getPhotos <username> [numphotos]')
-.alias('gp')
+.alias('gps')
 .description('Get list of users photos')
 .action((username,numphotos) => {
 
@@ -106,8 +111,20 @@ program
 
 	})
 
+program
+	.command('getPhoto <username> <photokey>')
+	.alias('gp')
+	.description('Download file to current directory')
+	.action((username, photoname) => {
 
+		db.get_object(username,photoname)
+		.then((data) => {
+			console.log(data)
+		})
+		.catch((err) => {
+			console.log(err)
+		})
 
-
+	})
 
 program.parse(process.argv)
