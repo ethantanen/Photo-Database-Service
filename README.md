@@ -1,2 +1,2 @@
 # Photo-Database-Service
-This repository contains implementation of a command line interface, graphical user interface and an application program interface for CALVINS photo storage.
+This repository contains implementations of a command line interface, graphical user interface and an application program interface for CALVIN's photo storage.
