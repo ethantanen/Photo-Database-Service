@@ -2,34 +2,34 @@ request = require("request-promise")
 fs = require("fs")
 
 // Send JSON
-// var options1 = {
-//   method: 'POST',
-//   uri: "http://localhost:3000/photo",
-//   body: {
-//     file: fs.createReadStream("favicon.jpg"),
-//     username: "gleesh"
-//   },
-//   json: true,
-//   resolveWithFullResponse: true
-// }
-
-// Send file
-var options2 = {
-  method: 'POST',
+var options1 = {
+  method: 'get',
   uri: "http://localhost:3000/photo",
-  formData: {
+  body: {
     username: "gleesh",
-    file: {
-      value: fs.createReadStream("unnamed.jpg"),
-      options: {
-        filename: "unnamed.jpg",
-        contentType:'image/jpg',
-      }
-    }
-  }
+    photoname: "favicon.jpg"
+  },
+  json: true,
+  resolveWithFullResponse: true
 }
 
-request(options2)
+// Send file
+// var options2 = {
+//   method: 'POST',
+//   uri: "http://localhost:3000/photo/list",
+//   formData: {
+//     username: "gleesh",
+//     file: {
+//       value: fs.createReadStream("unnamed.jpg"),
+//       options: {
+//         filename: "unnamed.jpg",
+//         contentType:'image/jpg',
+//       }
+//     }
+//   }
+// }
+
+request(options1)
   .then((data) => {
     console.log(data)
     console.log(data.body)

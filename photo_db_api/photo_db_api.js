@@ -6,7 +6,8 @@ formidable = require("formidable")
 
 // Custom error messages
 const USERNAME_ERR = "Include username in request's body."
-const PHOTO_ERR = "Include photo in request's body."
+const PHOTO_FILE_ERR = "Include photo in request's body."
+const PHOTO_NAME_ERR = "Include photo's name in request's body."
 
 app = express()
 
@@ -80,15 +81,15 @@ app.get("/user/list", (req,res) => {
 app.post("/photo", (req,res) => {
   form = new formidable.IncomingForm()
 
-  form.parse(req,(err,forms,files) => {
+  form.parse(req,(err,fields,files) => {
 
     // Form validation
-    if(!forms.username) return res.status(300).send(USERNAME_ERR)
-    if(!files) return res.status(300).send(PHOTO_ERR)
+    if(!fields.username) return res.status(300).send(USERNAME_ERR)
+    if(!files) return res.status(300).send(PHOTO_FILE_ERR)
 
     path = files.file.path
     fs.readFile(path,(err,data) => {
-      db.add_object(forms.username,files.file.name,data)
+      db.add_object(fields.username,files.file.name,data)
         .then((data)=>{
           res.status(200).send(data)
         })
@@ -102,14 +103,57 @@ app.post("/photo", (req,res) => {
 // Get photo
 app.get("/photo", (req,res) => {
 
+  form = new formidable.IncomingForm()
+  form.parse(req, (err,fields) => {
+    if(!fields.username) return res.status(300).send(USERNAME_ERR)
+    if(!fields.photoname) return res.status(300).send(PHOTO_NAME_ERR)
+    console.log(fields.username,fields.photoname)
+    db.get_object(fields.username,fields.photoname)
+      .then((data) => {
+        res.status(200).send(data)
+      })
+      .catch((err) => {
+        res.status(500).send(err.message)
+      })
+  })
 })
 
 // Get photo list
 app.get("/photo/list", (req,res) => {
 
+  form = new formidable.IncomingForm()
+
+  form.parse(req, (err,fields) => {
+
+    if(!fields.username) return res.status(300).send(USERNAME_ERR)
+    // Make call to S3 and send response with status
+    db.list_objects(fields.username)
+      .then((data) => {
+        res.status(200).send(data)
+      })
+      .catch((err) => {
+        res.status(500).send(err.message)
+      })
+  })
 })
 
 // Delete photos
 app.delete("/photo", (req,res) => {
+
+  form = new formidable.IncomingForm()
+
+  form.parse(req, (err,fields) => {
+
+    if(!fields.username) return res.status(300).send(USERNAME_ERR)
+    if(!fields.photoname) return res.status(300).send(PHOTO_NAME_ERR)
+    // Make call to S3 and send response with status
+    db.delete_object(fields.username,fields.photoname)
+      .then((data) => {
+        res.status(200).send(data)
+      })
+      .catch((err) => {
+        res.status(500).send(err.message)
+      })
+  })
 
 })

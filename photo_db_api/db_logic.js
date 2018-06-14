@@ -98,9 +98,13 @@ function get_object(bucket_name, object_name) {
       Key: object_name
     }
 
-    s3.getObject(params)
+    var stream = s3.getObject(params)
       .createReadStream()
       .pipe(fs.createWriteStream("./" + object_name))
+
+    stream.on('close',() => {
+      return resolve("File saved to current directory.")
+    })
 
   })
 }
