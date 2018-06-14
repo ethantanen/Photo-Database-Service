@@ -27,7 +27,7 @@ program
   .alias('au').description('add multiple users to the database')
   .action((usernames) => {
 
-    console.log("\nadding users to database...\n")
+    console.log("adding users to database...")
 
     promises = []
 
@@ -40,7 +40,7 @@ program
     }
 
     Promise.all(promises).then((data) => {
-      console.log("\n" + data.length + " users processed.\n")
+      console.log(data.length + " users processed.\n")
     })
   })
 
@@ -50,7 +50,7 @@ program
   .alias('ap').description('add multiple photos to a users collection')
   .action((username, filepaths) => {
 
-    console.log("\nadding photos to " + username + "\'s collection...")
+    console.log("adding photos to " + username + "\'s collection...")
 
     promises = []
 
@@ -68,7 +68,7 @@ program
     }
 
     Promise.all(promises).then((data) => {
-      console.log("\n" + data.length + " photos processed.")
+      console.log(data.length + " photos processed.\n")
     })
   })
 
@@ -78,12 +78,14 @@ program
   .alias('lu')
   .description('print list of users in database')
   .action(() => {
+    console.log("getting users list...")
     db.listBuckets().then((data) => {
       console.log(data.data)
     }).catch((err) => {
-      console.log("could not get users.")
       console.log(err.error)
     })
+    console.log("\n")
+
   })
 
 // List all photos in a users collection
@@ -92,12 +94,13 @@ program
   .alias('lp')
   .description('print list of users photos')
   .action((username, numphotos) => {
-    numphotos = numphotos || 1000
+    console.log("getting " + username + "\'s photos...")
     db.listObjects(username, numphotos).then((data) => {
       console.log(data.data)
     }).catch((err) => {
       console.log(err.error)
     })
+    console.log("\n")
   })
 
 // Delete a user
@@ -122,7 +125,7 @@ program
     }
 
     Promise.all(promises).then((data) => {
-      console.log("\n" + "users processed.")
+      console.log(data.length + "users processed.\n")
     })
   })
 
@@ -150,7 +153,7 @@ program
     }
 
     Promise.all(promises).then((data) => {
-      console.log(data.length + " photos deleted from " + username + "\'s collection.")
+      console.log(data.length + "photos processed.\n")
     })
 
   })
@@ -162,7 +165,7 @@ program
   .description('download file to current directory')
   .action((username, photokeys) => {
 
-    console.log("\ndownloading files from " + username + "\'s collection...\n")
+    console.log("downloading files from " + username + "\'s collection...")
 
     promises = []
 
@@ -177,11 +180,12 @@ program
     }
 
     Promise.all(promises).then((data) => {
-      console.log("\n" + data.length + " photos processed.")
+      console.log(data.length + " photos processed.\n")
 
     })
   })
 
+//Uploads file from users file system
 function uploadFile(file_path){
   return new Promise((resolve,reject) => {
     fs.readFile(file_path, (err,data) => {
@@ -191,15 +195,15 @@ function uploadFile(file_path){
   })
 }
 
-function downloadFile(file,file_name){
-  console.log("FILE: ", file)
-  return new Promise((resolve,reject) => {
-    fs.writeFile("./"+file_name,file.Body,(err) => {
-      if(err) return reject({error:err,objectName:file_name})
-      success(file_name)
-      return resolve({objectName:file_name})
-    })
-  })
-}
+// function downloadFile(file,file_name){
+//   console.log("FILE: ", file)
+//   return new Promise((resolve,reject) => {
+//     fs.writeFile("./"+file_name,file.Body,(err) => {
+//       if(err) return reject({error:err,objectName:file_name})
+//       success(file_name)
+//       return resolve({objectName:file_name})
+//     })
+//   })
+// }
 
 program.parse(process.argv)
