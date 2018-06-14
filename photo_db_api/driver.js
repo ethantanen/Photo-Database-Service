@@ -1,13 +1,13 @@
-request = require("request-promise")
-fs = require("fs")
+request = require('request-promise')
+fs = require('fs')
 
 // Send JSON
 var options1 = {
   method: 'get',
-  uri: "http://localhost:3000/photo",
+  uri: 'http://localhost:3000/photo',
   body: {
-    username: "gleesh",
-    photoname: "favicon.jpg"
+    username: 'gleesh',
+    photoname: 'favicon.jpg'
   },
   json: true,
   resolveWithFullResponse: true

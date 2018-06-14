@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon photo_db_api.js"
+    "dev": "nodemon photo_db_api.js",
+    "test": "standard --fix"
   },
   "author": "Ethan Tanen",
   "license": "ISC",

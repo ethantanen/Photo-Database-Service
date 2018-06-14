@@ -32,10 +32,10 @@ program
     promises = []
 
     for (i in usernames) {
-      promises.push(db.add_bucket(usernames[i]).then((data) => {
-        success(data.bucket_name)
-      }).catch((data) => {
-        failure(data.bucket_name)
+      promises.push(db.addBucket(usernames[i]).then((data) => {
+        success(data.bucketName)
+      }).catch((err) => {
+        failure(err.bucketName)
       }))
     }
 
@@ -56,10 +56,13 @@ program
 
     for(i in filepaths) {
       promises.push(
-        upload_file(filepaths[i]).then((data) => {
-          return db.add_object(username,data.object_name,data.data).then((data)=> {return success(data.object_name)})
+        uploadFile(filepaths[i]).then((data) => {
+          return db.addObject(username,data.objectName,data.data)
+                    .then((data)=> {
+                      return success(data.objectName)
+                    })
         }).catch((err) => {
-          return failure(err.object_name)
+          return failure(err.objectName)
         })
       )
     }
@@ -75,11 +78,11 @@ program
   .alias('lu')
   .description('print list of users in database')
   .action(() => {
-    db.list_buckets().then((data) => {
-      console.log(data)
+    db.listBuckets().then((data) => {
+      console.log(data.data)
     }).catch((err) => {
       console.log("could not get users.")
-      console.log(err)
+      console.log(err.error)
     })
   })
 
@@ -90,10 +93,10 @@ program
   .description('print list of users photos')
   .action((username, numphotos) => {
     numphotos = numphotos || 1000
-    db.list_objects(username, numphotos).then((data) => {
-      console.log(data)
+    db.listObjects(username, numphotos).then((data) => {
+      console.log(data.data)
     }).catch((err) => {
-      console.log(err)
+      console.log(err.error)
     })
   })
 
@@ -110,10 +113,10 @@ program
 
     for( i in usernames){
       promises.push(
-        db.delete_bucket(usernames[i]).then((data) => {
-          success(data.bucket_name)
-        }).catch((data) => {
-          failure(data.bucket_name)
+        db.deleteBucket(usernames[i]).then((data) => {
+          success(data.bucketName)
+        }).catch((err) => {
+          failure(err.bucketName)
         })
       )
     }
@@ -138,10 +141,10 @@ program
 
     for(i in photokeys) {
       promises.push(
-        db.delete_object(username, photokeys[i]).then((data) => {
-          success(data.bucket_name)
-        }).catch((data) => {
-          failure(data.bucket_name)
+        db.deleteObject(username, photokeys[i]).then((data) => {
+          success(data.bucketName)
+        }).catch((err) => {
+          failure(err.bucketName)
         })
       )
     }
@@ -165,10 +168,10 @@ program
 
     for( i in photokeys) {
       promises.push(
-        db.get_object(username, photokeys[i]).then((data) => {
-          return download_file(data.data,data.object_name)
-        }).catch((data) => {
-          failure(data.object_name)
+        db.getObject(username, photokeys[i]).then((data) => {
+          success(data.objectName)
+        }).catch((err) => {
+          failure(err.objectName)
         })
       )
     }
@@ -179,21 +182,22 @@ program
     })
   })
 
-function upload_file(file_path){
+function uploadFile(file_path){
   return new Promise((resolve,reject) => {
     fs.readFile(file_path, (err,data) => {
-      if(err) return reject({error:err,object_name:file_path})
-       return resolve({data:data,object_name:file_path})
+      if(err) return reject({error:err,objectName:file_path})
+       return resolve({data:data,objectName:file_path})
     })
   })
 }
 
-function download_file(file,file_name){
+function downloadFile(file,file_name){
+  console.log("FILE: ", file)
   return new Promise((resolve,reject) => {
     fs.writeFile("./"+file_name,file.Body,(err) => {
-      if(err) return reject({error:err,object_name:file_name})
+      if(err) return reject({error:err,objectName:file_name})
       success(file_name)
-      return resolve({object_name:file_name})
+      return resolve({objectName:file_name})
     })
   })
 }
