@@ -13,15 +13,7 @@ var s3 = new aws.S3({
 // Suffix appended to bucket name to make bucket names unique
 const BUCKET_SUFFIX = "-ventera-summer-2018"
 
-
-/*
- * All functions are of a similar form. Each function
- * returns a promise. Each function defines a parameters object
- * that's passed to the s3 api. The paramter list insantiation
- * is followed by a single call to the s3 api. Success and failure
- * print outs are left to the calling function, so as to generalize
- * this files usagpe capabilities.
- */
+/* All functions are of a similar form. Each function returns a promise. Each function defines a parameters object that's passed to the s3 api. The paramter list insantiation is followed by a single call to the s3 api. Success and failure print outs are left to the calling function, so as to generalize this files usagpe capabilities. */
 
 // Create new bucket with the given name
 function add_bucket(bucket_name) {
@@ -32,10 +24,9 @@ function add_bucket(bucket_name) {
     }
 
     s3.createBucket(params, (err, data) => {
-      if (err) return reject(err)
-      return resolve(data)
+      if (err) return reject({error: err, bucket_name: bucket_name})
+      return resolve({data: data, bucket_name: bucket_name})
     })
-
   })
 }
 
@@ -46,15 +37,14 @@ function add_object(bucket_name, object_name, object) {
     var params = {
       Body: object,
       Bucket: bucket_name + BUCKET_SUFFIX,
-      Key: object_name,
+      Key: object_name
     };
 
     // Upload object
     s3.putObject(params, (err, data) => {
-      if (err) return reject(err)
-      return resolve(data)
+      if (err) return reject({error: err, bucket_name: bucket_name, object_name: object_name})
+      return resolve({data: data, bucket_name: bucket_name, object_name: object_name})
     })
-
   })
 }
 
@@ -66,7 +56,6 @@ function list_buckets() {
       if (err) return reject(err)
       return resolve(data)
     })
-
   })
 }
 
@@ -76,7 +65,7 @@ function list_objects(bucket_name, max_objects) {
 
     var params = {
       Bucket: bucket_name + BUCKET_SUFFIX,
-      MaxKeys: max_objects,
+      MaxKeys: max_objects
     }
 
     s3.listObjects(params, (err, data) => {
@@ -89,17 +78,20 @@ function list_objects(bucket_name, max_objects) {
 
 // Get a document from the database
 function get_object(bucket_name, object_name) {
-  return new Promise((resolve, reject) => {
+
+  return new Promise((resolve,reject) => {
 
     var params = {
       Bucket: bucket_name + BUCKET_SUFFIX,
       Key: object_name
     }
 
-    s3.getObject(params)
-      .createReadStream()
-      .pipe(fs.createWriteStream("./" + object_name))
+    s3.getObject(params,(err,data) => {
 
+      if(err) return reject({error:err,bucket_name:bucket_name,object_name:object_name})
+      return resolve({data:data,bucket_name:bucket_name,object_name:object_name})
+
+    })
   })
 }
 
@@ -108,12 +100,13 @@ function delete_bucket(bucket_name) {
   return new Promise((resolve, reject) => {
 
     var params = {
-      Bucket: bucket_name + BUCKET_SUFFIX,
+      Bucket: bucket_name + BUCKET_SUFFIX
     }
 
     s3.deleteBucket(params, (err, data) => {
-      if (err) return reject(err)
-      return resolve(data)
+      if (err)
+        return reject({error: err, bucket_name: bucket_name})
+      return resolve({bucket_name: bucket_name})
     })
   })
 }
@@ -124,12 +117,12 @@ function delete_object(bucket_name, object_key) {
 
     var params = {
       Bucket: bucket_name + BUCKET_SUFFIX,
-      Key: object_key,
+      Key: object_key
     }
 
     s3.deleteObject(params, (err, data) => {
-      if (err) return reject(err)
-      return resolve(data)
+      if (err) return reject({error: err, bucket_name: bucket_name})
+      return resolve({bucket_name: bucket_name, object_key: object_key})
     })
 
   })

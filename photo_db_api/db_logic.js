@@ -19,8 +19,8 @@ const BUCKET_SUFFIX = "-ventera-summer-2018"
  * returns a promise. Each function defines a parameters object
  * that's passed to the s3 api. The paramter list insantiation
  * is followed by a single call to the s3 api. Success and failure
- * print outs are left to the calling function, so as to generalize
- * this files usagpe capabilities.
+ * printouts are left to the calling function, so as to generalize
+ * this files usage.
  */
 
 // Create new bucket with the given name
@@ -41,6 +41,8 @@ function add_bucket(bucket_name) {
 
 // Add new image to the specified bucket
 function add_object(bucket_name, object_name, object) {
+
+  console.log(object)
   return new Promise((resolve, reject) => {
 
     var params = {

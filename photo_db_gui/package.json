@@ -4,8 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon photo_db_gui.js"
   },
   "author": "Ethan Tanen",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.256.1",
+    "ejs": "^2.6.1",
+    "express": "^4.16.3"
+  }
 }

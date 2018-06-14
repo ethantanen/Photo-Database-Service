@@ -1,121 +1,201 @@
 #!/usr/bin/env node
 
+//TODO: add photos async wack, download photos async wack
+
 const program = require('commander')
 const db = require('./db_logic')
-const fs = require('fs')
+const Promise = require('bluebird');
+const fs = Promise.promisifyAll(require('fs'));
 
 program
   .version('0.0.1')
   .description('Query and modify an S3 database!')
 
-program
-  .command('adduser <username>')
-  .alias('au')
-  .description('add user to the database')
-  .action((username) => {
-    db.add_bucket(username)
-      .then((data) => {
-        console.log(username + " added to database.")
-      })
-      .catch((err) => {
-        console.log(username + " could not be added to database.")
-        console.log(err)
-      })
-  })
+// Print pretty green success message!
+function success(val) {
+  console.log("%s --> \x1b[32m%s\x1b[0m", val.padEnd(8, " "), "success")
+}
 
+// Print pretty red failure message!
+function failure(val) {
+  console.log("%s --> \x1b[31m%s\x1b[0m", val.padEnd(8, " "), "failure")
+}
+
+// Add users to database
 program
-  .command('addphoto <username> <filepath> [filename]')
-  .alias('ap')
-  .description('add photo to a users collection')
-  .action((username, filepath, filename) => {
-    // Use file path as name if filename was not provided
-    filename = String(filename) || String(filepath)
-    fs.readFile(filepath, (err, data) => {
-      db.add_object(username, filename, data)
-        .then((data) => {
-          console.log(filename + " added to " + username + "\'s collection.")
-        })
-        .catch((err) => {
-          console.log(filename + " could not be added to " + username + "\s collection.")
-          console.log(err)
-        })
+  .command('addusers <usernames...>')
+  .alias('au').description('add multiple users to the database')
+  .action((usernames) => {
+
+    console.log("\nadding users to database...\n")
+
+    promises = []
+
+    for (i in usernames) {
+      promises.push(db.add_bucket(usernames[i]).then((data) => {
+        success(data.bucket_name)
+      }).catch((data) => {
+        failure(data.bucket_name)
+      }))
+    }
+
+    Promise.all(promises).then((data) => {
+      console.log("\n" + data.length + " users processed.\n")
     })
   })
 
+// Add photos to users collection
+program
+  .command('addphotos <username> <filepaths...>')
+  .alias('ap').description('add multiple photos to a users collection')
+  .action((username, filepaths) => {
+
+    console.log("\nadding photos to " + username + "\'s collection...")
+
+    promises = []
+
+    for(i in filepaths) {
+      promises.push(
+        upload_file(filepaths[i]).then((data) => {
+          return db.add_object(username,data.object_name,data.data).then((data)=> {return success(data.object_name)})
+        }).catch((err) => {
+          return failure(err.object_name)
+        })
+      )
+    }
+
+    Promise.all(promises).then((data) => {
+      console.log("\n" + data.length + " photos processed.")
+    })
+  })
+
+// List all users
 program
   .command('listusers')
   .alias('lu')
   .description('print list of users in database')
   .action(() => {
-    db.list_buckets()
-      .then((data) => {
-        console.log(data)
-      })
-      .catch((err) => {
-        console.log("could not get users.")
-        console.log(err)
-      })
+    db.list_buckets().then((data) => {
+      console.log(data)
+    }).catch((err) => {
+      console.log("could not get users.")
+      console.log(err)
+    })
   })
 
+// List all photos in a users collection
 program
   .command('listphotos <username> [numphotos]')
   .alias('lp')
   .description('print list of users photos')
   .action((username, numphotos) => {
     numphotos = numphotos || 1000
-    db.list_objects(username, numphotos)
-      .then((data) => {
-        console.log(data)
-      })
-      .catch((err) => {
-        console.log(err)
-      })
+    db.list_objects(username, numphotos).then((data) => {
+      console.log(data)
+    }).catch((err) => {
+      console.log(err)
+    })
   })
 
+// Delete a user
 program
-  .command('deleteuser <username>')
+  .command('deleteusers <username...>')
   .alias('du')
-  .description('delete user from the database')
-  .action((username) => {
-    db.delete_bucket(username)
-      .then((data) => {
-        console.log(username + " has been deleted from the database.")
-      })
-      .catch((err) => {
-        console.log(username + " could not be deleted from the database.")
-        console.log(err)
-      })
+  .description('delete users from the database')
+  .action((usernames) => {
+
+    console.log("deleting users from database...")
+
+    promises = []
+
+    for( i in usernames){
+      promises.push(
+        db.delete_bucket(usernames[i]).then((data) => {
+          success(data.bucket_name)
+        }).catch((data) => {
+          failure(data.bucket_name)
+        })
+      )
+    }
+
+    Promise.all(promises).then((data) => {
+      console.log("\n" + "users processed.")
+    })
   })
 
 
+
+// Delete photos from a users account
 program
-  .command('deletephoto <username> <photokey>')
+  .command('deletephotos <username> <photokeys...>')
   .alias('dp')
-  .description('delete photo from a users collection')
-  .action((username, photokey) => {
-    db.delete_object(username, photokey)
-      .then((data) => {
-        console.log(photokey + " has been deleted from " + username + "\'s collection.")
-      })
-      .catch((err) => {
-        console.log(photokey + " could not be deleted from " + username + "\'s collection.")
-        console.log(err)
-      })
+  .description('delete photos from a users collection')
+  .action((username, photokeys) => {
+
+    console.log("deleting photos from " + username + "\'s collection...")
+
+    promises = []
+
+    for(i in photokeys) {
+      promises.push(
+        db.delete_object(username, photokeys[i]).then((data) => {
+          success(data.bucket_name)
+        }).catch((data) => {
+          failure(data.bucket_name)
+        })
+      )
+    }
+
+    Promise.all(promises).then((data) => {
+      console.log(data.length + " photos deleted from " + username + "\'s collection.")
+    })
+
   })
 
+// Get photos by name from a users collection
 program
-  .command('getphoto <username> <photokey>')
+  .command('getphoto <username> <photokeys...>')
   .alias('gp')
   .description('download file to current directory')
-  .action((username, photoname) => {
-    db.get_object(username, photoname)
-      .then((data) => {
-        console.log(photoname + " from " + username + "\'s collection has been downloaded")
-      })
-      .catch((err) => {
-        console.log(photoname + " from " + username + "\'s collection could not be downloaded")
-        console.log(err)
-      })
+  .action((username, photokeys) => {
+
+    console.log("\ndownloading files from " + username + "\'s collection...\n")
+
+    promises = []
+
+    for( i in photokeys) {
+      promises.push(
+        db.get_object(username, photokeys[i]).then((data) => {
+          return download_file(data.data,data.object_name)
+        }).catch((data) => {
+          failure(data.object_name)
+        })
+      )
+    }
+
+    Promise.all(promises).then((data) => {
+      console.log("\n" + data.length + " photos processed.")
+
+    })
   })
+
+function upload_file(file_path){
+  return new Promise((resolve,reject) => {
+    fs.readFile(file_path, (err,data) => {
+      if(err) return reject({error:err,object_name:file_path})
+       return resolve({data:data,object_name:file_path})
+    })
+  })
+}
+
+function download_file(file,file_name){
+  return new Promise((resolve,reject) => {
+    fs.writeFile("./"+file_name,file.Body,(err) => {
+      if(err) return reject({error:err,object_name:file_name})
+      success(file_name)
+      return resolve({object_name:file_name})
+    })
+  })
+}
 
 program.parse(process.argv)
