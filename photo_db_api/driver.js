@@ -2,28 +2,28 @@ request = require("request-promise")
 fs = require("fs")
 
 // Send JSON
-var options1 = {
-  method: 'POST',
-  uri: "http://localhost:3000/photo",
-  body: {
-    file: fs.createReadStream("favicon.jpg"),
-    username: "gleesh"
-  },
-  json: true,
-  resolveWithFullResponse: true
-}
+// var options1 = {
+//   method: 'POST',
+//   uri: "http://localhost:3000/photo",
+//   body: {
+//     file: fs.createReadStream("favicon.jpg"),
+//     username: "gleesh"
+//   },
+//   json: true,
+//   resolveWithFullResponse: true
+// }
 
 // Send file
 var options2 = {
   method: 'POST',
-  uri: "http://localhost:3000/photos",
+  uri: "http://localhost:3000/photo",
   formData: {
+    username: "gleesh",
     file: {
-      value: fs.createReadStream("./favicon.jpg"),
+      value: fs.createReadStream("unnamed.jpg"),
       options: {
-        filename: "favicon.jpg",
+        filename: "unnamed.jpg",
         contentType:'image/jpg',
-
       }
     }
   }

@@ -62,8 +62,8 @@ app.delete("/user", (req,res) => {
   })
 })
 
-// Get users
-app.get("/user", (req,res) => {
+// Get users list
+app.get("/user/list", (req,res) => {
 
   // Make call to S3 and send response with status
   db.list_buckets()
@@ -75,51 +75,41 @@ app.get("/user", (req,res) => {
     })
 })
 
+
 // Add photo
 app.post("/photo", (req,res) => {
-
-  // Instantiate formidable object to parse request
-  var form = new formidable.IncomingForm()
-
-  // Parse request
-  form.parse(req,(err,forms,files) => {
-    // Form validation
-    if(!forms.username) return res.status(300).send(USERNAME_ERR)
-    if(!forms) return res.status(300).send(PHOTO_ERR)
-
-    console.log(forms.username,files.file.name,files.file)
-    // Make call to S3 and send response with status
-    fs.writeFile(files.file)
-    db.add_object(forms.username,files.file.name,files)
-      .then((data) => {
-        res.status(200).send(data)
-      })
-      .catch((err) => {
-        res.status(500).send(err.message)
-      })
-  })
-
-
-})
-
-// Get photo
-app.post("/photos", (req,res) => {
   form = new formidable.IncomingForm()
 
   form.parse(req,(err,forms,files) => {
-    console.log(files)
 
-    fs.createWriteStream("./favicosn.jpg",files.file,(err) => {
-      console.log(err)
-      res.send("GLEESH")
+    // Form validation
+    if(!forms.username) return res.status(300).send(USERNAME_ERR)
+    if(!files) return res.status(300).send(PHOTO_ERR)
 
+    path = files.file.path
+    fs.readFile(path,(err,data) => {
+      db.add_object(forms.username,files.file.name,data)
+        .then((data)=>{
+          res.status(200).send(data)
+        })
+        .catch((err) => {
+          res.status(500).send(err)
+        })
     })
-
   })
+})
+
+// Get photo
+app.get("/photo", (req,res) => {
 
 })
 
-// Get photos
-app.get("/photo", (req,res) => {
+// Get photo list
+app.get("/photo/list", (req,res) => {
+
+})
+
+// Delete photos
+app.delete("/photo", (req,res) => {
 
 })
