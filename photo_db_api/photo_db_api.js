@@ -17,14 +17,22 @@ server = app.listen(3000, (err) => {
   return console.log('Server started on localhost:%s', port)
 })
 
+/*
+ * All routing functions are of a similar form. The first routing
+ * function, add user, is documented well. The remainder follow
+ * a similar form and have less documentation.
+ */
+
 // Add user
 app.post('/user', (req, res) => {
+
   // Instantiate formidable object to parse request
   var form = new formidable.IncomingForm()
 
   // Parse request
   form.parse(req, (err, forms, files) => {
-    // Check form validity
+
+    // Check form validity and return a username error if its not included 
     if (!forms.username) return res.status(300).send(USERNAME_ERR)
 
     // Make call to S3 and send response with status
@@ -40,14 +48,9 @@ app.post('/user', (req, res) => {
 
 // Delete user
 app.delete('/user', (req, res) => {
-  // Instantiate formidable object to parse request
   var form = new formidable.IncomingForm()
-
-  // Parse request
   form.parse(req, (err, forms, files) => {
     if (!forms.username) return res.status(300).send(USERNAME_ERR)
-
-    // Make call to S3 and send response with status
     db.deleteBucket(forms.username)
       .then((data) => {
         res.status(200).send(data)
@@ -60,7 +63,6 @@ app.delete('/user', (req, res) => {
 
 // Get users list
 app.get('/user/list', (req, res) => {
-  // Make call to S3 and send response with status
   db.listBuckets()
     .then((data) => {
       res.status(200).send(data)
@@ -73,12 +75,9 @@ app.get('/user/list', (req, res) => {
 // Add photo
 app.post('/photo', (req, res) => {
   form = new formidable.IncomingForm()
-
   form.parse(req, (err, fields, files) => {
-    // Form validation
     if (!fields.username) return res.status(300).send(USERNAME_ERR)
     if (!files) return res.status(300).send(PHOTO_FILE_ERR)
-
     path = files.file.path
     fs.readFile(path, (err, data) => {
       db.addObject(fields.username, files.file.name, data)
@@ -112,7 +111,6 @@ app.get('/photo', (req, res) => {
 // Get photo list
 app.get('/photo/list', (req, res) => {
   form = new formidable.IncomingForm()
-
   form.parse(req, (err, fields) => {
     if (!fields.username) return res.status(300).send(USERNAME_ERR)
     // Make call to S3 and send response with status
@@ -129,7 +127,6 @@ app.get('/photo/list', (req, res) => {
 // Delete photos
 app.delete('/photo', (req, res) => {
   form = new formidable.IncomingForm()
-
   form.parse(req, (err, fields) => {
     if (!fields.username) return res.status(300).send(USERNAME_ERR)
     if (!fields.photoname) return res.status(300).send(PHOTO_NAME_ERR)

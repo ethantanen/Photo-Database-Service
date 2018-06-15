@@ -27,7 +27,7 @@ program
   .alias('au').description('add multiple users to the database')
   .action((usernames) => {
 
-    console.log("adding users to database...")
+    console.log("\nadding users to database...")
 
     promises = []
 
@@ -50,7 +50,7 @@ program
   .alias('ap').description('add multiple photos to a users collection')
   .action((username, filepaths) => {
 
-    console.log("adding photos to " + username + "\'s collection...")
+    console.log("\nadding photos to " + username + "\'s collection...")
 
     promises = []
 
@@ -78,9 +78,13 @@ program
   .alias('lu')
   .description('print list of users in database')
   .action(() => {
-    console.log("getting users list...")
+    console.log("\ngetting users list...")
     db.listBuckets().then((data) => {
-      console.log(data.data)
+      buckets = data.data.Buckets
+      for( i in buckets) {
+        console.log("User: %s Date: %s", buckets[i].Name.split("-")[0].padEnd(10, " "), buckets[i].CreationDate)
+      }
+      console.log("Owner: " + data.data.Owner.DisplayName )
     }).catch((err) => {
       console.log(err.error)
     })
@@ -92,9 +96,12 @@ program
   .alias('lp')
   .description('print list of users photos')
   .action((username, numphotos) => {
-    console.log("getting " + username + "\'s photos...")
+    console.log("\ngetting " + username + "\'s photos...")
     db.listObjects(username, numphotos).then((data) => {
-      console.log(data.data)
+      photos = data.data.Contents
+      for( i in photos ){
+        console.log("Key: %s Size: %s",photos[i].Key.padEnd(20," "),photos[i].Size)
+      }
     }).catch((err) => {
       console.log(err.error)
     })
@@ -107,7 +114,7 @@ program
   .description('delete users from the database')
   .action((usernames) => {
 
-    console.log("deleting users from database...")
+    console.log("\ndeleting users from database...")
 
     promises = []
 
@@ -135,7 +142,7 @@ program
   .description('delete photos from a users collection')
   .action((username, photokeys) => {
 
-    console.log("deleting photos from " + username + "\'s collection...")
+    console.log("\ndeleting photos from " + username + "\'s collection...")
 
     promises = []
 
@@ -150,19 +157,19 @@ program
     }
 
     Promise.all(promises).then((data) => {
-      console.log(data.length + "photos processed.\n")
+      console.log(data.length + " photos processed.\n")
     })
 
   })
 
 // Get photos by name from a users collection
 program
-  .command('getphoto <username> <photokeys...>')
+  .command('getphotos <username> <photokeys...>')
   .alias('gp')
   .description('download file to current directory')
   .action((username, photokeys) => {
 
-    console.log("downloading files from " + username + "\'s collection...")
+    console.log("\ndownloading files from " + username + "\'s collection...")
 
     promises = []
 
