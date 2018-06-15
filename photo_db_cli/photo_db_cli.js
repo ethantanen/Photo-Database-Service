@@ -84,8 +84,6 @@ program
     }).catch((err) => {
       console.log(err.error)
     })
-    console.log("\n")
-
   })
 
 // List all photos in a users collection
@@ -100,7 +98,6 @@ program
     }).catch((err) => {
       console.log(err.error)
     })
-    console.log("\n")
   })
 
 // Delete a user
